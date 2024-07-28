@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+
+        @font-face {
+            font-family: 'lotion' ;
+            src: url(lotion/ttf/Lotion-Regular.ttf);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            font-family: 'lotion';
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            display: none;
+        }
+
+        .card {
+            width: 400px;
+            height: 600px;
+            border-radius: 10px;
+            position: relative;
+            z-index: 5;
+            overflow: hidden;
+        }
+
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.274);
+            backdrop-filter: blur(7px);
+            -webkit-backdrop-filter: blur(7px);
+            z-index: 10;
+        }
+
+        input {
+            position: relative;
+            z-index: 15;
+            padding: 10px 50px;
+            margin: 5px 0px;
+            text-align: center;
+            border-radius: 5px;
+            background-color: transparent;
+            color: white;
+            border: 1px solid rgb(255, 255, 255);
+        }
+
+        input:focus {
+            border: 1px solid black;
+            outline: none;
+            color: black;
+        }
+
+        input::placeholder {
+            color: white;
+        }
+
+        input:focus::placeholder {
+            color: black;
+        }
+
+        h2 {
+            color: white;
+            margin: 5px 0px 5px;
+            font-size: 30px;
+            background-color: rgba(0, 0, 0, .3);
+            border-radius: 5px;
+            padding: 5px 4%;
+        }
+
+        .dateTime {
+            color: white;
+            font-size: 20px;
+            background-color: rgba(0, 0, 0, .3);
+            border-radius: 5px;
+            padding: 0px 4%;
+            margin-bottom: 5px;
+        }
+
+        .temp {
+            display: flex;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 50px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+        }
+
+        .Contemp {
+            display: flex;  
+            flex-direction: column;
+            justify-content: center;
+            font-size: 12px;
+            margin-left: 5px;
+        }
+
+        .maintemp {
+            display: flex;
+            width: 100%;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 5px 10px;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .maxmin {
+            display: flex;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-radius: 5px;
+            padding: 5px 10px;
+        }
+
+        .maxmin p:first-of-type + p {
+            margin: 0px 10px;
+        } 
+
+        .clear {
+            background-image: url('clear.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .cloudy {
+            background-image: url('cloudy.jpg');
+            background-size: cover;
+            background-position: left;
+        }
+
+        .rain {
+            background-image: url('rain.mp4');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .snow {
+            background-image: url('snow.jpeg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .thunderstorm {
+            background-image: url('thunderstorm.jpg');
+            background-size: cover;
+            background-position: center;
+        }
+
+        #tempChart {
+            border-radius: 5px;
+            margin-bottom: 35px;
+        }
+
+        .forecast-container {
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+
+        .forecast {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .forecast-item {
+            width: 35%;
+            padding-top: 3px;
+            margin: 10px 10px;
+            border-radius: 30px;
+            background-color: rgba(0, 0, 0, 0.3);
+            text-transform: capitalize;
+            font-size: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .forecast-item p {
+            margin-bottom: 5px;
+        }
+
+        .day {
+            font-size: 16px;
+        }
+
+        .iconday {
+            margin-left: 20px;
+        }
+
+        strong {
+            font-weight: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <video autoplay muted loop src="clear.mp4" id="video-clear"></video>
+        <video autoplay muted loop src="cloudy.mp4" id="video-cloudy"></video>
+        <video autoplay muted loop src="rain.mp4" id="video-rain"></video>
+        <video autoplay muted loop src="snow.mp4" id="video-snow"></video>
+        <video autoplay muted loop src="thunderstorm.mp4" id="video-thunderstorm"></video>
+        <div class="card">
+            <div class="overlay"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        async function datosClima(city = 'vitoria-gasteiz') {
+            const response = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=d0b6a93c5f41e9a68d307c89db56c6bd&units=metric`);
+            const data = await response.json();
+
+            const temp = [];
+            const timeLabels = [];
+            const dailyForecasts = {};
+
+            data.list.forEach(item => {
+                const date = new Date(item.dt * 1000);
+                const dateString = date.toLocaleDateString('en-CA');
+
+                if (!dailyForecasts[dateString]) {
+                    dailyForecasts[dateString] = {
+                        tempMin: item.main.temp_min,
+                        tempMax: item.main.temp_max,
+                        mainWeather: item.weather[0].main
+                    };
+                } else {
+                    dailyForecasts[dateString].tempMin = Math.min(dailyForecasts[dateString].tempMin, item.main.temp_min);
+                    dailyForecasts[dateString].tempMax = Math.max(dailyForecasts[dateString].tempMax, item.main.temp_max);
+                }
+
+                if (date.getMinutes() === 0) {
+                    temp.push(item.main.temp.toFixed(0));
+                    timeLabels.push(date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+                }
+            });
+
+            const cityName = data.city.name;
+            const weatherDescription = data.list[0].weather[0].main.toLowerCase();
+            const mainWeather = data.list[0].weather[0].main;
+            const temMax = data.list[0].main.temp_max.toFixed(0);
+            const temMin = data.list[0].main.temp_min.toFixed(0);
+
+            const today = new Date();
+            const todayString = today.toLocaleDateString('en-CA');
+            const todayWeather = dailyForecasts[todayString];
+            const todayOptions = { weekday: 'long', month: 'long', day: 'numeric' };
+            const todayDateString = today.toLocaleDateString(undefined, todayOptions);
+
+            const divContainer = document.querySelector('.container');
+            const divOverlay = document.querySelector('.overlay');
+            divOverlay.innerHTML = '';
+
+            const weatherClasses = {
+                clear: 'clear',
+                clouds: 'cloudy',
+                rain: 'rain',
+                snow: 'snow',
+                thunderstorm: 'thunderstorm'
+            };
+
+            const weatherIcons = {
+                clear: 'fa-sun',
+                clouds: 'fa-cloud',
+                rain: 'fa-cloud-rain',
+                snow: 'fa-snowflake',
+                thunderstorm: 'fa-bolt'
+            };
+
+
+            const weatherClass = weatherClasses[weatherDescription];
+            const weatherIcon = weatherIcons[weatherDescription];
+
+            // Hide all videos
+            document.querySelectorAll('video').forEach(video => video.style.display = 'none');
+            // Show the relevant video
+            document.getElementById(`video-${weatherClass}`).style.display = 'block';
+
+            divOverlay.innerHTML += `
+                <form action="">
+                    <input type="text" name="search" placeholder="Buscar una ciudad" id="searchInput">
+                </form>
+                <h2>${cityName}</h2>
+                <p class="dateTime">${todayDateString}</p>
+                <div class="temp">
+                    <h1>${temp[0]}°</h1>
+                    <div class="Contemp">
+                        <div class="maintemp">
+                            <p>${mainWeather}</p>
+                            <p><i class="fas ${weatherIcon}" style="color: white"></i></p>
+                        </div>
+                        <div class="maxmin">
+                            <p>Máx: ${temMax}°</p>
+                            <p> - </p>
+                            <p>Mín: ${temMin}°</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="tempChart" style="background-color: rgba(0, 0, 0, 0.3)"></canvas>
+                </div>
+                <div class="forecast-container">
+                    <div class="forecast">
+                        ${Object.keys(dailyForecasts).filter(date => {
+                            const currentDate = new Date(date);
+                            const today = new Date();
+                            const dayDifference = (currentDate.getTime() - today.getTime()) / (1000 * 3600 * 24);
+
+                            return dayDifference > 0 && dayDifference <= 4;
+                        }).map(date => {
+                            const dayOfWeek = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'][new Date(date).getDay()];
+
+                            const dailyWeatherDescription = dailyForecasts[date].mainWeather.toLowerCase();
+                            const dailyWeatherIcon = weatherIcons[dailyWeatherDescription] || 'fa-cloud';
+                            return `
+                                <div class="forecast-item">
+                                    <p class="day">${dayOfWeek}</p>
+                                    <p>${dailyForecasts[date].mainWeather}<i class="fas ${dailyWeatherIcon} iconday" style="color: white"></i></p>
+                                    <p> H:${dailyForecasts[date].tempMax.toFixed(0)}° - L:${dailyForecasts[date].tempMin.toFixed(0)}°</p>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+
+            const ctx = document.getElementById('tempChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timeLabels.slice(0, 8),
+                    datasets: [{
+                        label: 'Temperatura (°C)',
+                        data: temp,
+                        backgroundColor: temp.map(t => t >= 23 ? 'rgba(255, 99, 71, 0.2)' : 'rgba(54, 162, 235, 0.2)'),
+                        borderColor: temp.map(t => t >= 23 ? 'rgba(255, 99, 71, 1)' : 'rgba(54, 162, 235, 1)'),
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                color: 'white',
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.3)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: 'white',
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.3)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            let searchTimer;
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', (event) => {
+                clearTimeout(searchTimer);
+
+                const city = event.target.value.trim();
+                if (city === '') {
+                    datosClima();
+                } else {
+                    searchTimer = setTimeout(() => {
+                        datosClima(city);
+                    }, 500);
+                }
+            });
+        }
+
+        datosClima();
+
+        setInterval(datosClima, 30000);
+    </script>
+</body>
+</html>
